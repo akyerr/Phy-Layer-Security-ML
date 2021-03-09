@@ -3,16 +3,16 @@ from numpy.random import normal
 
 class PLSParameters:
 
-    def __init__(self, prof):
+    def __init__(self, num_ant, bit_codebook):
         """
         Initialization of class
         :param prof: PLS profile containing basic parameters such as bandwidth, antennas bin spacing, bits in codebook
         index
         """
-        self.bandwidth = prof['bandwidth']
-        self.bin_spacing = prof['bin_spacing']
-        self.num_ant = prof['num_ant']
-        self.bit_codebook = prof['bit_codebook']
+        self.bandwidth = 960e3
+        self.bin_spacing = 15e3
+        self.num_ant = num_ant
+        self.bit_codebook = bit_codebook
 
         self.NFFT = int(floor(self.bandwidth/self.bin_spacing))
         # self.num_used_bins = self.NFFT - 2

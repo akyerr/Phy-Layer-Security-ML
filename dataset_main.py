@@ -1,28 +1,45 @@
-from numpy import array
-from pickle import dump
+from numpy import array, conj, sqrt
+from numpy.random import uniform, normal, randint
+from pickle import dump, load
+import os
 from PLSParameters import PLSParameters
 from Node import Node
 
-
+max_iter = 10 # Number of entries in the dataset
 max_SNR = 50
 SNR_dB = range(0, max_SNR, 10)
-max_iter = 100000
+fading = 0 # 0 - AWGN only, 1 - with fading channel
+num_ant = 2 # Number of antennas
+bit_codebook = 1 # Bits per codebook index
+num_classes = 2**bit_codebook # Number of classes that the classifer needs to learn
 
-pls_profiles = {
-               0: {'bandwidth': 960e3, 'bin_spacing': 15e3, 'num_ant': 2, 'bit_codebook': 1},
-               1: {'bandwidth': 960e3, 'bin_spacing': 15e3, 'num_ant': 2, 'bit_codebook': 2},
-               }
+pls_params = PLSParameters(num_ant, bit_codebook)
+codebook = pls_params.codebook_gen() # DFT codebook
 
-for prof in pls_profiles.values():
-    pls_params = PLSParameters(prof)
-    codebook = pls_params.codebook_gen()
-    N = Node(pls_params)  # Wireless network node - could be Alice or Bob
-    for s in range(len(SNR_dB)):
-        precoders = []
-        labels = []
-        for i in range(max_iter):
+
+for s in range(len(SNR_dB)):
+    SNR_lin = 10**(SNR_dB[s]/10)
+    precoders = []
+    labels = []
+    for i in range(max_iter):
+        if fading == 0:
+            tx_PMI = randint(0, num_classes)  # generate random precoder index
+
+            precoder = codebook[tx_PMI]
+
+            prec_power = sum(sum(precoder * conj(precoder))) / (num_ant ** 2)
+
+            noise_var = abs(prec_power) / SNR_lin
+
+            noise = normal(0, sqrt(noise_var), (num_ant, num_ant)) + 1j * normal(0, sqrt(noise_var),
+                                                                                 (num_ant, num_ant))
+
+            # Add noise
+            rx_precoder = precoder + noise
+        else:
             HAB, HBA = pls_params.channel_gen()
 
+            N = Node(pls_params)  # Wireless network node - could be Alice or Bob
             # 1. Alice to Bob
             GA = N.unitary_gen()
             rx_sigB0 = N.receive('Bob', SNR_dB[s], HAB, GA)
@@ -40,17 +57,20 @@ for prof in pls_profiles.values():
             # VA is the recived precoder
 
             rx_precoder = VA[0]
-            precoders.append(rx_precoder.flatten())
 
             tx_PMI = bits_subbandB[0]
 
             weights = 2 ** array(range(len(tx_PMI) - 1, -1, -1))
             tx_PMI = sum(tx_PMI * weights)
 
-            labels.append(tx_PMI)
+        precoders.append(rx_precoder.flatten())
+        labels.append(tx_PMI)
 
-        file_name = f'precoder_data_{pls_params.num_ant}_ant_SNR_{SNR_dB[s]}dB_{pls_params.bit_codebook}_bit_codebk'
-        with open(f'{file_name}.pkl', 'wb') as f:
-            dump([precoders, labels], f)
+    dir_name = 'datasets'
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+    file_name = f'{dir_name}/{fading}_precoder_data_{pls_params.num_ant}_ant_SNR_{SNR_dB[s]}dB_{pls_params.bit_codebook}_bit_codebk'
+    with open(f'{file_name}.pkl', 'wb') as f:
+        dump([precoders, labels], f)
 
 
