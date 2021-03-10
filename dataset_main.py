@@ -1,4 +1,4 @@
-from numpy import array, conj, sqrt
+from numpy import array, conj, sqrt, zeros
 from numpy.random import uniform, normal, randint
 from pickle import dump
 import os
@@ -62,8 +62,15 @@ for s in range(len(SNR_dB)):
 
             weights = 2 ** array(range(len(tx_PMI) - 1, -1, -1))
             tx_PMI = sum(tx_PMI * weights)
-
-        precoders.append(rx_precoder.flatten())
+        
+        precoder_mat2array = rx_precoder.flatten()
+        precoder_real = precoder_mat2array.real
+        precoder_imag = precoder_mat2array.imag
+        
+        precoder_real_imag = zeros(2*len(precoder_real), dtype=float)
+        precoder_real_imag[0::2] = precoder_real
+        precoder_real_imag[1::2] = precoder_imag
+        precoders.append(precoder_real_imag)
         labels.append(tx_PMI)
 
     dir_name = 'datasets'
