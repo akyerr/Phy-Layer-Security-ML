@@ -1,6 +1,6 @@
 from numpy import array, conj, sqrt
 from numpy.random import uniform, normal, randint
-from pickle import dump, load
+from pickle import dump
 import os
 from PLSParameters import PLSParameters
 from Node import Node
