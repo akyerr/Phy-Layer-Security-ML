@@ -16,7 +16,7 @@ class PLSParameters:
 
         self.NFFT = int(floor(self.bandwidth/self.bin_spacing))
         # self.num_used_bins = self.NFFT - 2
-        self.num_used_bins = 2
+        self.num_used_bins = self.num_ant
         self.subband_size = self.num_ant
 
         self.num_subbands = int(floor(self.num_used_bins/self.subband_size))

@@ -9,7 +9,8 @@ max_iter = 100000 # Number of entries in the dataset
 max_SNR = 50
 SNR_dB = range(0, max_SNR, 5)
 fading = 1 # 0 - AWGN only, 1 - with fading channel
-num_ant = 2 # Number of antennas
+# SNR_dB = [max_SNR]
+num_ant = 8 # Number of antennas
 bit_codebook = 1 # Bits per codebook index
 num_classes = 2**bit_codebook # Number of classes that the classifer needs to learn
 
@@ -62,6 +63,11 @@ for s in range(len(SNR_dB)):
 
             weights = 2 ** array(range(len(tx_PMI) - 1, -1, -1))
             tx_PMI = sum(tx_PMI * weights)
+
+            # print(FB[0])
+            # print(VA[0])
+            # print(FB[0] - VA[0])
+            dbg = 1
         
         precoder_mat2array = rx_precoder.flatten()
         precoder_real = precoder_mat2array.real
