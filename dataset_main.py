@@ -9,9 +9,8 @@ max_iter = 100000 # Number of entries in the dataset
 max_SNR = 50
 SNR_dB = range(0, max_SNR, 5)
 fading = 1 # 0 - AWGN only, 1 - with fading channel
-# SNR_dB = [max_SNR]
 num_ant = 8 # Number of antennas
-bit_codebook = 1 # Bits per codebook index
+bit_codebook = 2 # Bits per codebook index
 num_classes = 2**bit_codebook # Number of classes that the classifer needs to learn
 
 pls_params = PLSParameters(num_ant, bit_codebook)
